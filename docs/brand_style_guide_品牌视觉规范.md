@@ -10,7 +10,7 @@
 
 本规范适用于 Shopee、TikTok Shop、Lazada、独立站及其他电商渠道中的 9 图资产。它约束品牌关键词、摄影、构图、光影、材质、色彩、字体、Logo、AI 视觉描述和一致性检查。
 
-具体九图营销职责由 [`ecommerce_image_system_v2.md`](./ecommerce_image_system_v2.md) 定义。本规范不替代商标手册、包装源文件、平台政策或法务审核。
+具体九图营销职责由 [`ecommerce_image_system_电商9图系统.md`](./ecommerce_image_system_电商9图系统.md) 定义。本规范不替代商标手册、包装源文件、平台政策或法务审核。
 
 ## 1. 品牌目标
 

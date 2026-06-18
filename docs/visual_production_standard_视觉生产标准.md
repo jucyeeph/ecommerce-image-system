@@ -8,8 +8,8 @@
 
 适用于 BOMD、JUCYEE 及批准联名品牌的标准电商 9 图生产。产品事实、品牌规范和图片类型职责分别来自：
 
-- [`ecommerce_image_system_v2.md`](./ecommerce_image_system_v2.md)
-- [`brand_style_guide_v2_1.md`](./brand_style_guide_v2_1.md)
+- [`ecommerce_image_system_电商9图系统.md`](./ecommerce_image_system_电商9图系统.md)
+- [`brand_style_guide_品牌视觉规范.md`](./brand_style_guide_品牌视觉规范.md)
 - [`image_types/`](./image_types/)
 
 ## Global Inputs
@@ -52,4 +52,4 @@
 
 ## Acceptance
 
-单张图片需通过对应图片类型规则；整套图片还需通过 [`quality_checklist_v1.md`](./quality_checklist_v1.md)。任一关键真实性项失败即退回，不得用总分抵消。
+单张图片需通过对应图片类型规则；整套图片还需通过 [`quality_checklist_质量检查清单.md`](./quality_checklist_质量检查清单.md)。任一关键真实性项失败即退回，不得用总分抵消。
