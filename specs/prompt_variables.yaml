@@ -1,0 +1,60 @@
+schema_version: 1.0.0
+variables:
+  brand_name:
+    type: string
+    required: true
+    source: approved_brand_data
+    allow_inference: false
+
+  product_name:
+    type: string
+    required: true
+    source: product_data
+    allow_inference: false
+
+  product_type:
+    type: string
+    required: true
+    source: product_data
+    allow_inference: false
+
+  product_features:
+    type: array
+    item_type: string
+    required: true
+    min_items: 1
+    source: verified_product_data
+    allow_inference: false
+
+  sku_data:
+    type: array
+    item_schema:
+      sku_id: string
+      display_name: string
+      color_name: string_or_null
+      size: string_or_null
+      model: string_or_null
+      quantity: integer_or_null
+    required: true
+    source: sku_data
+    allow_inference: false
+
+  target_market:
+    type: string
+    required: true
+    source: campaign_brief
+    allow_inference: false
+
+  style_reference:
+    type: array
+    item_type: asset_reference
+    required: true
+    min_items: 1
+    source: approved_references
+    allow_inference: false
+
+validation:
+  reject_unknown_variables: true
+  reject_empty_required_values: true
+  reject_unverified_claims: true
+  reject_unapproved_brand_assets: true

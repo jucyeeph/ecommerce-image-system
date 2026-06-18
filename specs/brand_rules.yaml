@@ -1,0 +1,102 @@
+schema_version: 1.0.0
+brands:
+  - BOMD
+  - JUCYEE
+  - approved_collaborations
+
+visual_keywords:
+  - premium
+  - elegant
+  - professional
+  - minimalist
+  - luxury
+  - modern
+  - refined
+  - editorial
+  - commercial
+
+color_system:
+  approved_names:
+    - champagne_gold
+    - warm_beige
+    - ivory_white
+    - soft_black
+    - pearl_white
+  use_approved_color_values_only: true
+  background_serves_product: true
+  prohibited:
+    - fluorescent_colors
+    - rainbow_gradients
+    - distracting_backgrounds
+    - color_cast_affecting_sku
+
+lighting_system:
+  preferred:
+    - soft_studio_lighting
+    - side_back_lighting
+    - cinematic_fill
+    - controlled_specular_highlights
+    - physically_consistent_shadows
+  prohibited:
+    - hard_direct_flash
+    - clipped_highlights
+    - contradictory_light_directions
+    - physically_incorrect_reflections
+
+composition_system:
+  product_is_primary_subject: true
+  default_product_ratio:
+    min: 0.60
+    max: 0.80
+  preferred_alignment:
+    - centered
+    - golden_ratio_when_context_requires
+  mobile_safe_area_required: true
+  single_visual_center: true
+  prohibited:
+    - clutter
+    - competing_focal_points
+    - critical_content_outside_safe_area
+
+typography_system:
+  display_candidates:
+    - Baskerville
+    - Didot
+    - Playfair Display
+  supporting_candidates:
+    - Helvetica
+    - Inter
+    - Montserrat
+  approved_substitutes_only: true
+  consistent_pair_per_image_set: true
+  mobile_readable: true
+
+logo_system:
+  official_source_required: true
+  preserve_aspect_ratio: true
+  preserve_color: true
+  preserve_letter_spacing: true
+  consistent_safe_area: true
+  preferred_position: top_center
+  prohibited:
+    - generated_logo
+    - redrawn_logo
+    - cropped_logo
+    - distorted_logo
+    - unapproved_effects
+
+product_protection:
+  preserve:
+    - shape
+    - label
+    - packaging
+    - sku_color
+    - material
+    - quantity
+    - accessories
+
+reference_policy:
+  inspiration_only: true
+  competitor_trademarks_prohibited: true
+  competitor_packaging_prohibited: true
+  competitor_trade_dress_prohibited: true

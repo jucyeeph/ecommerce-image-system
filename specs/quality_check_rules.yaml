@@ -1,0 +1,93 @@
+schema_version: 1.0.0
+scoring:
+  scale:
+    min: 0
+    max: 5
+  pass_score: 4
+  overall_minimum_average: 4.0
+  all_critical_rules_must_pass: true
+
+rules:
+  - id: logo_accuracy
+    label: Logo
+    weight: 1.0
+    critical: true
+    checks:
+      - official_source_used
+      - shape_preserved
+      - color_preserved
+      - readable
+
+  - id: product_truthfulness
+    label: 产品真实性
+    weight: 2.0
+    critical: true
+    checks:
+      - shape_matches_source
+      - label_matches_source
+      - packaging_matches_source
+      - sku_color_matches_source
+      - quantity_matches_source
+
+  - id: brand_consistency
+    label: 品牌一致性
+    weight: 1.0
+    critical: false
+    checks:
+      - approved_color_system
+      - approved_typography
+      - consistent_visual_language
+
+  - id: composition
+    label: 构图
+    weight: 1.0
+    critical: false
+    checks:
+      - single_visual_center
+      - product_priority
+      - safe_area_respected
+      - uncluttered_layout
+
+  - id: lighting
+    label: 灯光
+    weight: 1.0
+    critical: false
+    checks:
+      - material_is_readable
+      - reflections_are_physical
+      - highlights_not_clipped
+      - light_directions_consistent
+
+  - id: text_accuracy
+    label: 文字
+    weight: 1.5
+    critical: true
+    checks:
+      - spelling_correct
+      - claims_verified
+      - sku_labels_correct
+      - no_generated_watermark
+
+  - id: mobile_readability
+    label: 移动端可读性
+    weight: 1.0
+    critical: false
+    checks:
+      - product_recognizable_at_thumbnail
+      - primary_text_readable
+      - information_density_acceptable
+
+  - id: marketing_goal
+    label: 营销目标达成度
+    weight: 1.5
+    critical: true
+    checks:
+      - matches_image_type
+      - single_primary_goal
+      - required_output_present
+
+failure_actions:
+  critical_failure: reject
+  below_pass_score: revise
+  missing_evidence: reject
+  unknown_sku_or_claim: reject

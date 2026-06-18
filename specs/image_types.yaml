@@ -1,0 +1,208 @@
+schema_version: 1.0.0
+sequence_locked: true
+image_types:
+  - id: 01_stop_scroll
+    order: 1
+    goal: attention_and_click
+    funnel_stage: attract
+    product_ratio:
+      min: 0.60
+      max: 0.80
+    required_inputs:
+      - product_images
+      - official_logo
+      - product_name
+      - primary_feature
+    required_outputs:
+      - recognizable_product
+      - visible_logo
+      - single_primary_message
+    success_signals:
+      - thumbnail_readable
+      - product_is_visual_center
+    prohibited:
+      - multiple_competing_messages
+      - distorted_product
+      - generated_logo
+
+  - id: 02_explain
+    order: 2
+    goal: explain_purchase_reasons
+    funnel_stage: attract
+    product_ratio:
+      min: 0.40
+      max: 0.70
+    required_inputs:
+      - product_images
+      - verified_features
+      - feature_evidence
+    required_outputs:
+      - three_to_five_features
+      - clear_information_hierarchy
+    success_signals:
+      - understandable_within_three_seconds
+      - mobile_readable
+    prohibited:
+      - unsupported_claims
+      - duplicate_features
+      - dense_paragraphs
+
+  - id: 03_choose
+    order: 3
+    goal: simplify_sku_selection
+    funnel_stage: attract
+    product_ratio:
+      min: 0.50
+      max: 0.80
+    required_inputs:
+      - sku_data
+      - sku_product_images
+      - sku_order
+    required_outputs:
+      - complete_sku_set
+      - one_to_one_labels
+      - comparable_layout
+    success_signals:
+      - sku_count_matches_source
+      - sku_colors_match_source
+    prohibited:
+      - invented_skus
+      - label_mismatch
+      - color_shift
+
+  - id: 04_desire
+    order: 4
+    goal: visualize_desired_result
+    funnel_stage: convert
+    product_ratio:
+      min: 0.25
+      max: 0.60
+    required_inputs:
+      - product_images
+      - verified_results
+      - usage_context
+    required_outputs:
+      - credible_final_result
+      - relatable_usage_subject
+    success_signals:
+      - result_is_visible
+      - result_is_supported
+    prohibited:
+      - exaggerated_before_after
+      - unsupported_effects
+      - anatomical_errors
+
+  - id: 05_quality
+    order: 5
+    goal: prove_material_and_craft_quality
+    funnel_stage: convert
+    product_ratio:
+      min: 0.60
+      max: 0.90
+    required_inputs:
+      - high_resolution_product_images
+      - material_data
+      - key_detail_list
+    required_outputs:
+      - macro_detail
+      - realistic_material_response
+    success_signals:
+      - details_match_source
+      - reflections_are_physical
+    prohibited:
+      - invented_texture
+      - invented_structure
+      - plastic_appearance
+
+  - id: 06_use
+    order: 6
+    goal: demonstrate_correct_and_easy_use
+    funnel_stage: convert
+    product_ratio:
+      min: 0.20
+      max: 0.50
+    required_inputs:
+      - product_images
+      - usage_steps
+      - product_dimensions
+      - safety_constraints
+    required_outputs:
+      - correct_action
+      - realistic_product_scale
+      - relevant_context
+    success_signals:
+      - action_is_reproducible
+      - product_remains_visible
+    prohibited:
+      - unsafe_action
+      - incorrect_grip
+      - invented_accessories
+
+  - id: 07_aspire
+    order: 7
+    goal: identity_projection
+    funnel_stage: close
+    product_ratio:
+      min: 0.20
+      max: 0.40
+    environment_ratio:
+      min: 0.60
+      max: 0.80
+    required_inputs:
+      - product_images
+      - target_audience
+      - relevant_aspirational_context
+    required_outputs:
+      - relatable_identity_scene
+      - recognizable_product
+    success_signals:
+      - scene_matches_category
+      - scene_matches_target_market
+    prohibited:
+      - irrelevant_luxury_props
+      - competitor_brand_assets
+      - cultural_stereotypes
+
+  - id: 08_premium
+    order: 8
+    goal: increase_perceived_value
+    funnel_stage: close
+    product_ratio:
+      min: 0.35
+      max: 0.70
+    required_inputs:
+      - official_packaging_images
+      - bundle_contents
+      - accessory_counts
+    required_outputs:
+      - complete_delivery_set
+      - ordered_unboxing_experience
+    success_signals:
+      - contents_match_sku
+      - packaging_matches_source
+    prohibited:
+      - invented_packaging
+      - invented_gifts
+      - incorrect_quantity
+
+  - id: 09_trust
+    order: 9
+    goal: reduce_purchase_risk
+    funnel_stage: close
+    product_ratio:
+      min: 0.25
+      max: 0.60
+    required_inputs:
+      - verified_certifications
+      - quality_evidence
+      - after_sales_policy
+    required_outputs:
+      - traceable_claims
+      - readable_assurance_information
+    success_signals:
+      - every_claim_has_evidence
+      - policy_scope_is_accurate
+    prohibited:
+      - invented_certificates
+      - invented_badges
+      - unsupported_medical_claims
