@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ecommerce Image System</title>
+  <style>
+    :root {
+      --bg: #f6f2ea;
+      --panel: #fffaf2;
+      --ink: #241b14;
+      --muted: #7b6b5e;
+      --line: #e2d5c6;
+      --brand: #8b4d2f;
+      --brand-2: #c9864f;
+      --good: #26734d;
+      --warn: #b56b00;
+      --bad: #a33a34;
+      --shadow: 0 16px 40px rgba(55, 36, 22, .10);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #fff6e8, var(--bg) 42%, #efe5d8);
+      color: var(--ink);
+    }
+    header {
+      padding: 28px 32px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 250, 242, .88);
+      position: sticky;
+      top: 0;
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+    h1 { margin: 0 0 6px; font-size: 25px; letter-spacing: -0.02em; }
+    h2 { margin: 0 0 14px; font-size: 18px; }
+    h3 { margin: 0 0 10px; font-size: 15px; }
+    p { color: var(--muted); line-height: 1.55; }
+    button, input, textarea, select {
+      font: inherit;
+    }
+    button, .button {
+      border: 0;
+      background: var(--brand);
+      color: white;
+      border-radius: 11px;
+      padding: 10px 14px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      text-decoration: none;
+      line-height: 1;
+    }
+    button.secondary, .button.secondary { background: #ead8c4; color: var(--ink); }
+    button.ghost { background: transparent; color: var(--brand); border: 1px solid var(--line); }
+    button.small { padding: 7px 10px; border-radius: 9px; font-size: 13px; }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 11px;
+      padding: 10px 11px;
+      background: #fffdf8;
+      color: var(--ink);
+    }
+    textarea { min-height: 110px; resize: vertical; }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+    main {
+      display: grid;
+      grid-template-columns: 320px minmax(0, 1fr);
+      gap: 18px;
+      padding: 18px;
+    }
+    aside, section.card, .stage, .sku, .asset {
+      background: rgba(255, 250, 242, .92);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+    aside { padding: 16px; height: calc(100vh - 120px); overflow: auto; position: sticky; top: 100px; }
+    .content { display: grid; gap: 18px; }
+    .card { padding: 18px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .muted { color: var(--muted); }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #f0dfcb;
+      color: #604331;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+    .pill.good { background: #ddf0e5; color: var(--good); }
+    .pill.warn { background: #fff0cf; color: var(--warn); }
+    .pill.bad { background: #f6dddd; color: var(--bad); }
+    .project-list { display: grid; gap: 8px; margin-top: 12px; }
+    .project-item {
+      border: 1px solid var(--line);
+      background: #fffdf8;
+      padding: 12px;
+      border-radius: 13px;
+      cursor: pointer;
+    }
+    .project-item.active { outline: 2px solid var(--brand-2); }
+    .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+    .tab { background: #ead8c4; color: var(--ink); }
+    .tab.active { background: var(--brand); color: #fff; }
+    .stage, .sku, .asset { padding: 14px; display: grid; gap: 12px; box-shadow: none; }
+    .stage-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+    .stage-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+    .asset a { color: var(--brand); word-break: break-all; }
+    .preview {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #ead8c4;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      background: #2b211a;
+      color: #fff4e4;
+      padding: 12px;
+      border-radius: 12px;
+      max-height: 280px;
+      overflow: auto;
+    }
+    .notice {
+      border-left: 4px solid var(--brand-2);
+      background: #fff4df;
+      padding: 10px 12px;
+      border-radius: 12px;
+      color: #5a3c28;
+    }
+    .hidden { display: none !important; }
+    @media (max-width: 980px) {
+      main { grid-template-columns: 1fr; }
+      aside { position: static; height: auto; }
+      .grid, .stage-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>电商图片 Docker 管理台</h1>
+    <div class="muted">固定 Prompt + 当前产品项目 + 人工 GPT 生图桥接 + 图床链接导出</div>
+  </header>
+
+  <main>
+    <aside>
+      <h2>项目</h2>
+      <div class="notice">第一版是本地单机系统。数据保存在 Docker volume 的 <code>/data</code> 里。</div>
+      <form id="createProjectForm" style="display:grid;gap:10px;margin-top:14px;">
+        <label>项目名称 <input name="name" required placeholder="例如 BOMD 甲油胶 001" /></label>
+        <label>产品名称 <input name="product_name" required placeholder="产品名" /></label>
+        <label>产品链接（可选） <input name="product_url" placeholder="https://..." /></label>
+        <label>补充说明（可选） <textarea name="notes" placeholder="材质、禁用表达、目标市场等"></textarea></label>
+        <button type="submit">创建项目</button>
+      </form>
+      <div class="project-list" id="projectList"></div>
+    </aside>
+
+    <div class="content">
+      <section class="card">
+        <div class="actions" style="justify-content:space-between;">
+          <div>
+            <h2 id="currentTitle">请选择或创建项目</h2>
+            <div class="muted" id="currentMeta">项目创建后，可以上传素材并按步骤生成 9 图与 SKU 图。</div>
+          </div>
+          <div class="actions">
+            <button class="secondary" onclick="loadAll()">刷新</button>
+            <a class="button secondary hidden" id="exportJson" href="#">导出 JSON</a>
+            <a class="button secondary hidden" id="exportCsv" href="#">导出 CSV</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="card hidden" id="projectPanel">
+        <div class="tabs">
+          <button class="tab active" data-tab="materials">1 提供物料</button>
+          <button class="tab" data-tab="extract">2 提取整理</button>
+          <button class="tab" data-tab="stages">3 九图流程</button>
+          <button class="tab" data-tab="sku">4 SKU 图</button>
+          <button class="tab" data-tab="prompts">Prompt 管理</button>
+          <button class="tab" data-tab="export">链接导出</button>
+        </div>
+
+        <div id="tab-materials" class="tabPanel">
+          <h2>创建项目，提供物料</h2>
+          <div class="grid">
+            <label>产品介绍 / GPT 回填区
+              <textarea id="productDescription" placeholder="素材提取后，把产品介绍粘贴到这里"></textarea>
+            </label>
+            <label>SKU 介绍 / GPT 回填区
+              <textarea id="skuDescription" placeholder="素材提取后，把 SKU 说明粘贴到这里"></textarea>
+            </label>
+          </div>
+          <div class="actions" style="margin:12px 0;">
+            <button onclick="saveProjectText()">保存产品与 SKU 信息</button>
+          </div>
+          <form id="rawUploadForm" class="actions">
+            <input type="file" name="files" multiple />
+            <button type="submit">上传电商原图素材包</button>
+          </form>
+          <h3 style="margin-top:18px;">项目文件</h3>
+          <div class="asset-grid" id="assetList"></div>
+        </div>
+
+        <div id="tab-extract" class="tabPanel hidden">
+          <h2>提取并整理素材</h2>
+          <p>下载素材提取包，把压缩包和 Prompt 丢到 GPT。GPT 返回的产品介绍、SKU 介绍和产品生图素材，再回传到系统。</p>
+          <div class="actions">
+            <a class="button" id="extractPackage" href="#">下载素材提取包</a>
+          </div>
+          <form id="extractedUploadForm" class="actions" style="margin-top:14px;">
+            <input type="file" name="files" multiple />
+            <button type="submit">上传 GPT 整理后的产品生图素材</button>
+          </form>
+        </div>
+
+        <div id="tab-stages" class="tabPanel hidden">
+          <h2>九张电商图流程</h2>
+          <div id="stageList" style="display:grid;gap:12px;"></div>
+        </div>
+
+        <div id="tab-sku" class="tabPanel hidden">
+          <h2>SKU 生图</h2>
+          <form id="skuForm" class="grid">
+            <label>SKU 名称 <input name="sku_name" required placeholder="例如 01 Milky White" /></label>
+            <label>SKU 说明 <input name="description" placeholder="颜色、规格、数量等" /></label>
+            <button type="submit">添加 SKU 图任务</button>
+          </form>
+          <div id="skuList" style="display:grid;gap:12px;margin-top:14px;"></div>
+        </div>
+
+        <div id="tab-prompts" class="tabPanel hidden">
+          <h2>固定 Prompt 管理</h2>
+          <p>这里改的是固定版 Prompt，会影响后续项目。每个项目也可以在九图流程里保存自己的项目级微调 Prompt。</p>
+          <div id="promptList" style="display:grid;gap:12px;"></div>
+        </div>
+
+        <div id="tab-export" class="tabPanel hidden">
+          <h2>图床链接整理与导出</h2>
+          <p>在九图和 SKU 卡片里填写图床链接。这里导出的 JSON/CSV 会保留缺失项，方便你检查。</p>
+          <pre id="exportPreview">选择项目后显示导出预览。</pre>
+          <div class="actions">
+            <a class="button" id="exportJson2" href="#">下载 JSON</a>
+            <a class="button secondary" id="exportCsv2" href="#">下载 CSV</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const state = { projects: [], currentId: null, current: null, prompts: [], stagesMeta: [] };
+
+    async function api(path, options = {}) {
+      const res = await fetch(path, {
+        headers: options.body instanceof FormData ? {} : { 'Content-Type': 'application/json' },
+        ...options
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: res.statusText }));
+        throw new Error(err.error || res.statusText);
+      }
+      return res.json();
+    }
+
+    function toast(message) {
+      alert(message);
+    }
+
+    async function loadAll() {
+      const [projects, prompts, stages] = await Promise.all([
+        api('/api/projects'),
+        api('/api/prompts'),
+        api('/api/stages')
+      ]);
+      state.projects = projects.projects;
+      state.prompts = prompts.prompts;
+      state.stagesMeta = stages.stages;
+      renderProjects();
+      renderPrompts();
+      if (state.currentId) await loadProject(state.currentId);
+    }
+
+    function renderProjects() {
+      const list = document.getElementById('projectList');
+      list.innerHTML = state.projects.map(p => `
+        <div class="project-item ${p.id === state.currentId ? 'active' : ''}" onclick="loadProject('${p.id}')">
+          <strong>${escapeHtml(p.name)}</strong>
+          <div class="muted">${escapeHtml(p.product_name)}</div>
+          <span class="pill">${escapeHtml(p.status)}</span>
+        </div>
+      `).join('') || '<p>还没有项目。</p>';
+    }
+
+    async function loadProject(id) {
+      state.currentId = id;
+      state.current = await api(`/api/projects/${id}`);
+      const p = state.current.project;
+      document.getElementById('projectPanel').classList.remove('hidden');
+      document.getElementById('currentTitle').textContent = p.name;
+      document.getElementById('currentMeta').textContent = `${p.product_name} ｜ ${p.status} ｜ ${p.product_url || '无产品链接'}`;
+      document.getElementById('productDescription').value = p.product_description || '';
+      document.getElementById('skuDescription').value = p.sku_description || '';
+      for (const el of ['exportJson', 'exportJson2']) elById(el).href = `/api/projects/${id}/export.json`;
+      for (const el of ['exportCsv', 'exportCsv2']) elById(el).href = `/api/projects/${id}/export.csv`;
+      document.getElementById('exportJson').classList.remove('hidden');
+      document.getElementById('exportCsv').classList.remove('hidden');
+      document.getElementById('extractPackage').href = `/api/projects/${id}/package/extract`;
+      renderProjects();
+      renderAssets();
+      renderStages();
+      renderSkus();
+      renderExportPreview();
+    }
+
+    function renderAssets() {
+      const assets = state.current?.assets || [];
+      document.getElementById('assetList').innerHTML = assets.map(renderAsset).join('') || '<p>还没有上传文件。</p>';
+    }
+
+    function renderAsset(asset) {
+      const isImage = (asset.mime_type || '').startsWith('image/');
+      return `<div class="asset">
+        ${isImage ? `<img class="preview" src="${asset.url}" alt="">` : ''}
+        <strong>${escapeHtml(asset.filename)}</strong>
+        <span class="pill">${escapeHtml(asset.kind)}</span>
+        <a href="${asset.url}" target="_blank">打开文件</a>
+      </div>`;
+    }
+
+    function renderStages() {
+      const stages = state.current?.stages || [];
+      document.getElementById('stageList').innerHTML = stages.map(stage => `
+        <div class="stage">
+          <div class="stage-head">
+            <div>
+              <h3>${escapeHtml(stage.title)}</h3>
+              <span class="pill ${stage.status === 'approved' ? 'good' : stage.status === 'needs_redo' ? 'bad' : 'warn'}">${stage.status}</span>
+              ${stage.has_override ? '<span class="pill good">项目微调 Prompt</span>' : '<span class="pill">继承固定 Prompt</span>'}
+            </div>
+            <div class="actions">
+              <a class="button small secondary" href="/api/projects/${state.currentId}/package/${stage.stage_id}">下载素材包</a>
+              <button class="small ghost" onclick="copyPrompt('${stage.stage_id}')">复制 Prompt</button>
+            </div>
+          </div>
+          <div class="stage-grid">
+            <label>项目级 Prompt 微调
+              <textarea id="prompt_${stage.stage_id}">${escapeHtml(stage.prompt || '')}</textarea>
+            </label>
+            <div style="display:grid;gap:10px;">
+              <label>状态
+                <select id="status_${stage.stage_id}">
+                  ${['not_started','package_ready','waiting_for_manual_gpt','uploaded','approved','needs_redo','skipped'].map(s => `<option ${s === stage.status ? 'selected' : ''}>${s}</option>`).join('')}
+                </select>
+              </label>
+              <label>图床链接 <input id="url_${stage.stage_id}" value="${escapeAttr(stage.image_url || '')}" placeholder="https://..." /></label>
+              <label>备注 <textarea id="notes_${stage.stage_id}">${escapeHtml(stage.notes || '')}</textarea></label>
+              <div class="actions">
+                <button class="small" onclick="saveStage('${stage.stage_id}')">保存阶段</button>
+              </div>
+            </div>
+          </div>
+          <form class="actions" onsubmit="uploadStage(event, '${stage.stage_id}')">
+            <input type="file" name="files" multiple />
+            <button class="small" type="submit">上传成品图</button>
+          </form>
+          <div class="asset-grid">${(stage.assets || []).map(renderAsset).join('')}</div>
+        </div>
+      `).join('');
+    }
+
+    function renderSkus() {
+      const skus = state.current?.skus || [];
+      document.getElementById('skuList').innerHTML = skus.map(sku => `
+        <div class="sku">
+          <div class="stage-head">
+            <div>
+              <h3>${escapeHtml(sku.sku_name)}</h3>
+              <span class="pill">${escapeHtml(sku.status)}</span>
+              <div class="muted">${escapeHtml(sku.description || '')}</div>
+            </div>
+          </div>
+          <div class="grid">
+            <label>状态 <select id="sku_status_${sku.id}">
+              ${['not_started','package_ready','waiting_for_manual_gpt','uploaded','approved','needs_redo','skipped'].map(s => `<option ${s === sku.status ? 'selected' : ''}>${s}</option>`).join('')}
+            </select></label>
+            <label>SKU 图床链接 <input id="sku_url_${sku.id}" value="${escapeAttr(sku.image_url || '')}" placeholder="https://..." /></label>
+          </div>
+          <label>备注 <textarea id="sku_notes_${sku.id}">${escapeHtml(sku.notes || '')}</textarea></label>
+          <div class="actions"><button class="small" onclick="saveSku('${sku.id}')">保存 SKU</button></div>
+          <form class="actions" onsubmit="uploadSku(event, '${sku.id}')">
+            <input type="file" name="files" multiple />
+            <button class="small" type="submit">上传 SKU 成品图</button>
+          </form>
+          <div class="asset-grid">${(sku.assets || []).map(renderAsset).join('')}</div>
+        </div>
+      `).join('') || '<p>还没有 SKU 任务。</p>';
+    }
+
+    function renderPrompts() {
+      document.getElementById('promptList').innerHTML = state.prompts.map(p => `
+        <div class="stage">
+          <div class="stage-head">
+            <h3>${escapeHtml(p.name)}</h3>
+            <span class="pill">v${p.version}</span>
+          </div>
+          <textarea id="fixed_${p.stage_id}" style="min-height:220px;">${escapeHtml(p.content)}</textarea>
+          <div class="actions"><button class="small" onclick="saveFixedPrompt('${p.stage_id}')">保存固定 Prompt 新版本</button></div>
+        </div>
+      `).join('');
+    }
+
+    async function renderExportPreview() {
+      if (!state.currentId) return;
+      const data = await api(`/api/projects/${state.currentId}/export.json`);
+      document.getElementById('exportPreview').textContent = JSON.stringify(data, null, 2);
+    }
+
+    document.getElementById('createProjectForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(e.target).entries());
+      const res = await api('/api/projects', { method: 'POST', body: JSON.stringify(body) });
+      e.target.reset();
+      await loadAll();
+      await loadProject(res.project_id);
+    });
+
+    document.getElementById('rawUploadForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      await uploadFiles(e.target, `/api/projects/${state.currentId}/assets?kind=raw_asset`);
+    });
+
+    document.getElementById('extractedUploadForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      await uploadFiles(e.target, `/api/projects/${state.currentId}/assets?kind=extracted_asset`);
+    });
+
+    document.getElementById('skuForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const body = Object.fromEntries(new FormData(e.target).entries());
+      await api(`/api/projects/${state.currentId}/skus`, { method: 'POST', body: JSON.stringify(body) });
+      e.target.reset();
+      await loadProject(state.currentId);
+    });
+
+    document.querySelectorAll('.tab').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tabPanel').forEach(p => p.classList.add('hidden'));
+        button.classList.add('active');
+        document.getElementById(`tab-${button.dataset.tab}`).classList.remove('hidden');
+        if (button.dataset.tab === 'export') renderExportPreview();
+      });
+    });
+
+    async function uploadFiles(form, url) {
+      if (!state.currentId) return toast('请先选择项目');
+      const data = new FormData(form);
+      await api(url, { method: 'POST', body: data });
+      form.reset();
+      await loadProject(state.currentId);
+    }
+
+    async function uploadStage(event, stageId) {
+      event.preventDefault();
+      await uploadFiles(event.target, `/api/projects/${state.currentId}/assets?kind=stage_output&stage_id=${stageId}`);
+    }
+
+    async function uploadSku(event, skuId) {
+      event.preventDefault();
+      await uploadFiles(event.target, `/api/projects/${state.currentId}/skus/${skuId}/assets`);
+    }
+
+    async function saveProjectText() {
+      await api(`/api/projects/${state.currentId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          product_description: elById('productDescription').value,
+          sku_description: elById('skuDescription').value,
+          status: 'product_material_extracted'
+        })
+      });
+      await loadProject(state.currentId);
+    }
+
+    async function saveStage(stageId) {
+      await api(`/api/projects/${state.currentId}/stages/${stageId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          status: elById(`status_${stageId}`).value,
+          image_url: elById(`url_${stageId}`).value,
+          notes: elById(`notes_${stageId}`).value,
+          prompt_override: elById(`prompt_${stageId}`).value
+        })
+      });
+      await loadProject(state.currentId);
+    }
+
+    async function saveSku(skuId) {
+      await api(`/api/projects/${state.currentId}/skus/${skuId}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+          status: elById(`sku_status_${skuId}`).value,
+          image_url: elById(`sku_url_${skuId}`).value,
+          notes: elById(`sku_notes_${skuId}`).value
+        })
+      });
+      await loadProject(state.currentId);
+    }
+
+    async function saveFixedPrompt(stageId) {
+      await api(`/api/prompts/${stageId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ content: elById(`fixed_${stageId}`).value })
+      });
+      await loadAll();
+    }
+
+    function copyPrompt(stageId) {
+      const text = elById(`prompt_${stageId}`).value;
+      navigator.clipboard.writeText(text).then(() => toast('Prompt 已复制'));
+    }
+
+    function elById(id) { return document.getElementById(id); }
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+    function escapeAttr(value) { return escapeHtml(value); }
+
+    loadAll().catch(err => toast(err.message));
+  </script>
+</body>
+</html>

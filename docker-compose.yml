@@ -1,0 +1,15 @@
+services:
+  ecommerce-image-system:
+    build: .
+    container_name: ecommerce-image-system
+    ports:
+      - "8080:8080"
+    volumes:
+      - ecommerce_image_system_data:/data
+    environment:
+      EIS_DATA_DIR: /data
+      EIS_PORT: 8080
+    restart: unless-stopped
+
+volumes:
+  ecommerce_image_system_data:
