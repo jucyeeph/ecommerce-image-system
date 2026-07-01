@@ -6,7 +6,7 @@ import path from 'path';
 import AdmZip from 'adm-zip';
 import { openDatabase } from '../server/db.js';
 import { createProject, getProject } from '../server/services/projectService.js';
-import { handleHermesZip } from '../server/services/fileService.js';
+import { handleHermesZip, moveFileAcrossDevices } from '../server/services/fileService.js';
 
 test('creates project folders and Hermes prompt from a product link', () => {
   const ctx = createTestContext();
@@ -56,6 +56,31 @@ test('parses Hermes zip, writes SKUs, renames project, and prepares next prompts
   ctx.cleanup();
 });
 
+test('moves uploaded files across Docker mount boundaries when rename reports EXDEV', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ecommerce-workbench-exdev-'));
+  const source = path.join(root, 'upload.tmp');
+  const target = path.join(root, 'data', 'upload.zip');
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(source, 'zip-bytes', 'utf8');
+
+  const originalRename = fs.renameSync;
+  fs.renameSync = () => {
+    const error = new Error('cross-device link not permitted');
+    error.code = 'EXDEV';
+    throw error;
+  };
+
+  try {
+    moveFileAcrossDevices(source, target);
+  } finally {
+    fs.renameSync = originalRename;
+  }
+
+  assert.equal(fs.existsSync(source), false);
+  assert.equal(fs.readFileSync(target, 'utf8'), 'zip-bytes');
+  fs.rmSync(root, { recursive: true, force: true });
+});
+
 function createTestContext() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ecommerce-workbench-test-'));
   const previous = {
@@ -80,4 +105,3 @@ function createTestContext() {
     }
   };
 }
-

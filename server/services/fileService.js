@@ -35,7 +35,7 @@ export function handleHermesZip(db, projectId, uploadedFile) {
   const stageDir = path.join(project.project_path, '01_hermes_collection');
   const originalZip = path.join(stageDir, 'hermes_upload_original.zip');
   fs.mkdirSync(stageDir, { recursive: true });
-  fs.renameSync(uploadedFile.path, originalZip);
+  moveFileAcrossDevices(uploadedFile.path, originalZip);
   registerFile(db, projectId, 'hermes_collection', 'hermes_zip', originalZip);
   extractZip(originalZip, stageDir);
 
@@ -112,7 +112,7 @@ export function handleStageUpload(db, projectId, stageKey, files) {
       continue;
     }
     const target = path.join(destination, `${Date.now()}-${safeName(file.originalname)}`);
-    fs.renameSync(file.path, target);
+    moveFileAcrossDevices(file.path, target);
     const id = registerFile(db, projectId, stageKey, 'stage_image', target);
     records.push({ id, file_path: target, file_name: path.basename(target) });
   }
@@ -152,3 +152,12 @@ function safeName(value) {
   return value.replace(/[^a-zA-Z0-9._-]+/g, '-');
 }
 
+export function moveFileAcrossDevices(source, target) {
+  try {
+    fs.renameSync(source, target);
+  } catch (error) {
+    if (error.code !== 'EXDEV') throw error;
+    fs.copyFileSync(source, target);
+    fs.unlinkSync(source);
+  }
+}
