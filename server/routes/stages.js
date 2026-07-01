@@ -51,7 +51,8 @@ export function stagesRouter(db) {
 
   router.post('/:stageKey/approve', (req, res, next) => {
     try {
-      updateStageStatus(req.params.id, req.params.stageKey, 'approved');
+      const status = req.params.stageKey === 'hermes_collection' ? 'done' : 'approved';
+      updateStageStatus(req.params.id, req.params.stageKey, status);
       res.json(getStage(req.params.id, req.params.stageKey));
     } catch (error) {
       next(error);
@@ -60,7 +61,8 @@ export function stagesRouter(db) {
 
   router.post('/:stageKey/revision', (req, res, next) => {
     try {
-      updateStageStatus(req.params.id, req.params.stageKey, 'needs_revision');
+      const status = req.params.stageKey === 'hermes_collection' ? 'needs_fix' : 'needs_revision';
+      updateStageStatus(req.params.id, req.params.stageKey, status);
       res.json(getStage(req.params.id, req.params.stageKey));
     } catch (error) {
       next(error);
@@ -129,7 +131,9 @@ export function stagesRouter(db) {
   function updateStageStatus(projectId, stageKey, status) {
     const now = new Date().toISOString();
     db.prepare('UPDATE project_stages SET status = ?, updated_at = ? WHERE project_id = ? AND stage_key = ?').run(status, now, projectId, stageKey);
-    if (stageKey === 'product_cutout_material' && status === 'approved') {
+    if (stageKey === 'hermes_collection' && status === 'done') {
+      db.prepare('UPDATE projects SET current_stage = ?, updated_at = ? WHERE id = ?').run('product_cutout_material', now, projectId);
+    } else if (stageKey === 'product_cutout_material' && status === 'approved') {
       db.prepare('UPDATE projects SET current_stage = ?, updated_at = ? WHERE id = ?').run('main_image', now, projectId);
     } else {
       db.prepare('UPDATE projects SET current_stage = ?, updated_at = ? WHERE id = ?').run(stageKey, now, projectId);

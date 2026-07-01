@@ -12,6 +12,27 @@ const GOALS = {
   main_image: '基于产品资料、白底素材和品牌资料生成主图，并确认最终主图。'
 };
 
+const ACTION_LABELS = {
+  hermes_collection: {
+    approve: '标记采集完成',
+    revision: '标记资料需修正',
+    approveMessage: 'Hermes 采集已标记完成。',
+    revisionMessage: 'Hermes 资料已标记为需修正。'
+  },
+  product_cutout_material: {
+    approve: '标记通过',
+    revision: '标记返工',
+    approveMessage: '阶段已标记通过。',
+    revisionMessage: '阶段已标记返工。'
+  },
+  main_image: {
+    approve: '标记通过',
+    revision: '标记返工',
+    approveMessage: '阶段已标记通过。',
+    revisionMessage: '阶段已标记返工。'
+  }
+};
+
 export default function StagePage({ id, stageKey, navigate }) {
   const [data, setData] = useState(null);
   const [prompt, setPrompt] = useState('');
@@ -50,7 +71,13 @@ export default function StagePage({ id, stageKey, navigate }) {
   }
 
   async function upload(filesToUpload) {
-    if (stageKey === 'hermes_collection') return;
+    if (stageKey === 'hermes_collection') {
+      setMessage('正在上传并解析 Hermes zip...');
+      const result = await api.uploadHermes(id, filesToUpload[0]);
+      setMessage(result.warnings?.length ? result.warnings.join('；') : 'Hermes zip 已解析。');
+      await load();
+      return;
+    }
     await api.uploadStage(id, stageKey, filesToUpload);
     setMessage('图片已上传。');
     await load();
@@ -65,11 +92,13 @@ export default function StagePage({ id, stageKey, navigate }) {
   async function mark(action) {
     if (action === 'approve') await api.approve(id, stageKey);
     if (action === 'revision') await api.revision(id, stageKey);
-    setMessage(action === 'approve' ? '阶段已标记通过。' : '阶段已标记返工。');
+    const labels = ACTION_LABELS[stageKey];
+    setMessage(action === 'approve' ? labels.approveMessage : labels.revisionMessage);
     await load();
   }
 
   if (!data) return <section className="work-area">加载中...</section>;
+  const actionLabels = ACTION_LABELS[stageKey];
 
   return (
     <section className="work-area">
@@ -90,7 +119,9 @@ export default function StagePage({ id, stageKey, navigate }) {
             {files.map((file) => <li key={file.id}>{file.file_type} / {file.file_name}</li>)}
             {!files.length && <li className="muted">暂无阶段文件。</li>}
           </ul>
-          {stageKey !== 'hermes_collection' && (
+          {stageKey === 'hermes_collection' ? (
+            <FileUploader accept=".zip" label="上传 Hermes zip" onUpload={upload} />
+          ) : (
             <FileUploader accept=".jpg,.jpeg,.png,.webp" multiple label="上传生成图片" onUpload={upload} />
           )}
         </section>
@@ -105,12 +136,11 @@ export default function StagePage({ id, stageKey, navigate }) {
       <section className="panel">
         <div className="panel-header"><h2>阶段操作</h2></div>
         <div className="button-row">
-          <button className="primary-button" onClick={() => mark('approve')}><CheckCircle2 size={16} /> 标记通过</button>
-          <button className="secondary-button" onClick={() => mark('revision')}><RotateCcw size={16} /> 标记返工</button>
+          <button className="primary-button" onClick={() => mark('approve')}><CheckCircle2 size={16} /> {actionLabels.approve}</button>
+          <button className="secondary-button" onClick={() => mark('revision')}><RotateCcw size={16} /> {actionLabels.revision}</button>
           <button className="secondary-button" onClick={() => navigate(`/projects/${id}`)}>返回项目详情</button>
         </div>
       </section>
     </section>
   );
 }
-
