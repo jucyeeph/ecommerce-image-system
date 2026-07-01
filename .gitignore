@@ -1,0 +1,13 @@
+node_modules/
+client/node_modules/
+dist/
+client/dist/
+.env
+data/database/*.sqlite
+data/database/*.sqlite-*
+data/projects/*
+!data/projects/.gitkeep
+.DS_Store
+coverage/
+*.log
+

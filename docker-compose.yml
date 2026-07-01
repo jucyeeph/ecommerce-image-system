@@ -1,0 +1,15 @@
+services:
+  ecommerce-image-workbench:
+    build: .
+    container_name: ecommerce-image-workbench
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3088}:3088"
+    environment:
+      DATA_DIR: ${DATA_DIR:-/app/data}
+      DATABASE_PATH: ${DATABASE_PATH:-/app/data/database/workbench.sqlite}
+      PROJECTS_DIR: ${PROJECTS_DIR:-/app/data/projects}
+      APP_INTERNAL_PORT: 3088
+    volumes:
+      - ./data:/app/data
+
