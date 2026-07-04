@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ecommerce Image Workbench</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Phase 1</p>
+        <h1>Ecommerce Image Workbench</h1>
+      </div>
+      <a class="nav-link" href="/">Import</a>
+    </header>
+
+    <main class="layout">
+      <section class="import-panel">
+        <div>
+          <h2>上传 BigSeller 表格</h2>
+          <p>导入 `.xlsx` 后自动创建素材项目、下载图片、生成 SKU 映射和提示词草稿。</p>
+        </div>
+        <form id="import-form" class="upload-zone">
+          <input id="file-input" name="file" type="file" accept=".xlsx" />
+          <button type="submit">导入</button>
+        </form>
+        <div id="import-status" class="status-line"></div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>最近项目</h2>
+          <button id="refresh-projects" type="button">刷新</button>
+        </div>
+        <div id="project-list" class="project-list"></div>
+      </section>
+    </main>
+
+    <script src="/js/import.js" type="module"></script>
+  </body>
+</html>
