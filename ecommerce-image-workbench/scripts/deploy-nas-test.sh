@@ -118,6 +118,7 @@ COPYFILE_DISABLE=1 tar \
   --exclude='./node_modules' \
   --exclude='./data/app.db' \
   --exclude='./data/app.db-*' \
+  --exclude='./data/settings/*' \
   --exclude='./data/uploads/*' \
   --exclude='./projects/*' \
   --exclude='./.env' \

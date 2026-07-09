@@ -5,6 +5,8 @@ import { initDatabase } from './db/init.js';
 import { indexRoutes } from './routes/indexRoutes.js';
 import { importRoutes } from './routes/importRoutes.js';
 import { projectRoutes } from './routes/projectRoutes.js';
+import { settingsRoutes } from './routes/settingsRoutes.js';
+import { workflowRoutes } from './routes/workflowRoutes.js';
 import { ensureDir } from './services/fileWriter.js';
 
 await Promise.all([ensureDir(paths.uploadsDir), ensureDir(paths.projectsDir), ensureDir(paths.dataDir)]);
@@ -19,6 +21,8 @@ app.use('/projects-assets', express.static(paths.projectsDir));
 app.use(indexRoutes);
 app.use(importRoutes);
 app.use(projectRoutes);
+app.use(settingsRoutes);
+app.use(workflowRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });

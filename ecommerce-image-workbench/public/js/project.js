@@ -60,7 +60,18 @@ function render(project) {
       <div class="section-head"><h2>提示词文件</h2></div>
       <div class="prompt-list">${project.prompts.map((file) => `<span>${escapeHtml(file)}</span>`).join('')}</div>
     </section>
+
+    <section id="workflow-section">
+      <div class="section-head">
+        <h2>Phase 2 工作流</h2>
+        <button id="refresh-workflow" type="button">刷新工作流</button>
+      </div>
+      <div id="workflow-root" class="workflow-root">
+        <p class="muted">正在载入图片项目管理器...</p>
+      </div>
+    </section>
   `;
+  loadWorkflow(project.project_id);
 }
 
 function metric(label, value) {
@@ -98,4 +109,116 @@ function escapeHtml(value) {
     '"': '&quot;',
     "'": '&#39;'
   })[char]);
+}
+
+async function loadWorkflow(projectId) {
+  const workflowRoot = document.querySelector('#workflow-root');
+  document.querySelector('#refresh-workflow')?.addEventListener('click', () => loadWorkflow(projectId));
+  try {
+    const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/workflow`);
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || '工作流载入失败');
+    workflowRoot.innerHTML = renderWorkflow(projectId, payload.workflow);
+    bindWorkflowActions(projectId);
+  } catch (error) {
+    workflowRoot.innerHTML = `<p class="status-line" data-type="error">${escapeHtml(error.message)}</p>`;
+  }
+}
+
+function renderWorkflow(projectId, workflow) {
+  return `
+    <div class="workflow-board">
+      <div class="workflow-column">
+        <h3>1. 产品角度参考图</h3>
+        ${taskCard(projectId, workflow.angleReference)}
+      </div>
+      <div class="workflow-column wide">
+        <h3>2. 9 张电商图</h3>
+        <div class="task-grid">${workflow.ecommerceImages.map((task) => taskCard(projectId, task)).join('')}</div>
+      </div>
+      <div class="workflow-column wide">
+        <h3>3. SKU 图</h3>
+        <div class="task-grid">${workflow.skuImages.map((task) => taskCard(projectId, task)).join('')}</div>
+      </div>
+    </div>
+  `;
+}
+
+function taskCard(projectId, task) {
+  return `<article class="task-card" data-task-type="${escapeHtml(task.taskType)}" data-task-id="${escapeHtml(task.taskId)}">
+    <div class="task-card-head">
+      <div>
+        <strong>${escapeHtml(task.title)}</strong>
+        <small>${escapeHtml(task.taskId)}</small>
+      </div>
+      <span class="pill">${escapeHtml(task.status)}</span>
+    </div>
+    ${task.sku?.local_image_path ? `<img class="task-thumb" src="/projects-assets/${encodeURIComponent(projectId)}/${task.sku.local_image_path.split('/').map(encodeURIComponent).join('/')}" alt="" />` : ''}
+    <textarea class="task-prompt">${escapeHtml(task.prompt || '')}</textarea>
+    <div class="task-actions">
+      <button type="button" data-action="save-prompt">保存提示词</button>
+      <button type="button" data-action="download-package">下载素材包</button>
+      <label class="upload-button">
+        上传结果
+        <input type="file" accept="image/*" data-action="upload-result" />
+      </label>
+    </div>
+    <div class="uploaded-list">
+      ${(task.uploadedResults || []).map((file) => `<img src="/projects-assets/${encodeURIComponent(projectId)}/${file.path.split('/').map(encodeURIComponent).join('/')}" alt="${escapeHtml(file.name)}" />`).join('')}
+    </div>
+    <p class="task-message"></p>
+  </article>`;
+}
+
+function bindWorkflowActions(projectId) {
+  for (const card of document.querySelectorAll('.task-card')) {
+    card.querySelector('[data-action="save-prompt"]').addEventListener('click', () => savePrompt(projectId, card));
+    card.querySelector('[data-action="download-package"]').addEventListener('click', () => downloadPackage(projectId, card));
+    card.querySelector('[data-action="upload-result"]').addEventListener('change', (event) => uploadResult(projectId, card, event));
+  }
+}
+
+async function savePrompt(projectId, card) {
+  const payload = { prompt: card.querySelector('.task-prompt').value };
+  const response = await fetch(taskUrl(projectId, card, 'prompt'), {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+  const result = await response.json();
+  setTaskMessage(card, response.ok ? '提示词已保存。' : result.error, response.ok ? 'working' : 'error');
+}
+
+function downloadPackage(projectId, card) {
+  window.location.href = taskUrl(projectId, card, 'package');
+}
+
+async function uploadResult(projectId, card, event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const body = new FormData();
+  body.append('file', file);
+  const response = await fetch(taskUrl(projectId, card, 'upload'), {
+    method: 'POST',
+    body
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    setTaskMessage(card, result.error, 'error');
+    return;
+  }
+  setTaskMessage(card, '结果已上传。', 'working');
+  await loadWorkflow(projectId);
+}
+
+function taskUrl(projectId, card, action) {
+  const taskType = card.dataset.taskType;
+  const taskId = card.dataset.taskId;
+  return `/api/projects/${encodeURIComponent(projectId)}/workflow/tasks/${encodeURIComponent(taskType)}/${encodeURIComponent(taskId)}/${action}`;
+}
+
+function setTaskMessage(card, message, type) {
+  const target = card.querySelector('.task-message');
+  target.textContent = message || '';
+  target.dataset.type = type || '';
 }
