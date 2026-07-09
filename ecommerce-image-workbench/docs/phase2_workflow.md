@@ -36,11 +36,11 @@ Settings are intentionally outside Git so the test NAS can keep its own prompt a
 
 Each `input_package.zip` contains:
 
-- `README_FOR_CHATGPT.md`
 - `prompt.md`
-- `product_info.json`
-- `image_urls.json`
+- `product_brief.md`
 - source main/detail images when available
 - angle reference results when available
 - prior ecommerce image results for style continuity when applicable
-- global generation assets from settings
+- global brand assets from settings
+
+System files such as `image_urls.json` and `product_info.json` remain in `00_source/` for traceability, but they are not included in ChatGPT packages by default.

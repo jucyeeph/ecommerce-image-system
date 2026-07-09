@@ -57,5 +57,11 @@ test('workflow service saves prompts and builds a ChatGPT package zip', async ()
   assert.equal(task.promptEdited, true);
   assert.equal(path.basename(zipPath), 'input_package.zip');
   const bytes = await fs.readFile(zipPath);
+  const zipText = bytes.toString('latin1');
   assert.equal(bytes.subarray(0, 2).toString(), 'PK');
+  assert.match(zipText, /prompt\.md/);
+  assert.match(zipText, /product_brief\.md/);
+  assert.doesNotMatch(zipText, /README_FOR_CHATGPT\.md/);
+  assert.doesNotMatch(zipText, /image_urls\.json/);
+  assert.doesNotMatch(zipText, /product_info\.json/);
 });

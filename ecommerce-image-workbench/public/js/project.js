@@ -2,6 +2,9 @@ const params = new URLSearchParams(window.location.search);
 const projectId = params.get('id');
 const root = document.querySelector('#project-root');
 const title = document.querySelector('#project-title');
+let currentProject = null;
+let currentWorkflow = null;
+let activeTaskKey = 'angle:angle_reference';
 
 if (!projectId) {
   root.innerHTML = '<p class="status-line" data-type="error">缺少项目 ID。</p>';
@@ -21,6 +24,7 @@ async function loadProject(id) {
 }
 
 function render(project) {
+  currentProject = project;
   title.textContent = project.project_id;
   const status = project.status;
   const product = project.product;
@@ -118,7 +122,8 @@ async function loadWorkflow(projectId) {
     const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/workflow`);
     const payload = await response.json();
     if (!response.ok) throw new Error(payload.error || '工作流载入失败');
-    workflowRoot.innerHTML = renderWorkflow(projectId, payload.workflow);
+    currentWorkflow = payload.workflow;
+    workflowRoot.innerHTML = renderWorkflow(projectId, currentWorkflow);
     bindWorkflowActions(projectId);
   } catch (error) {
     workflowRoot.innerHTML = `<p class="status-line" data-type="error">${escapeHtml(error.message)}</p>`;
@@ -126,40 +131,70 @@ async function loadWorkflow(projectId) {
 }
 
 function renderWorkflow(projectId, workflow) {
+  const groups = workflowGroups(workflow);
+  const activeTask = allWorkflowTasks(workflow).find((task) => taskKey(task) === activeTaskKey) || workflow.angleReference;
+  activeTaskKey = taskKey(activeTask);
   return `
-    <div class="workflow-board">
-      <div class="workflow-column">
-        <h3>1. 产品角度参考图</h3>
-        ${taskCard(projectId, workflow.angleReference)}
-      </div>
-      <div class="workflow-column wide">
-        <h3>2. 9 张电商图</h3>
-        <div class="task-grid">${workflow.ecommerceImages.map((task) => taskCard(projectId, task)).join('')}</div>
-      </div>
-      <div class="workflow-column wide">
-        <h3>3. SKU 图</h3>
-        <div class="task-grid">${workflow.skuImages.map((task) => taskCard(projectId, task)).join('')}</div>
-      </div>
+    <div class="workflow-workspace">
+      <aside class="workflow-steps">
+        ${groups.map((group) => workflowStepGroup(group)).join('')}
+      </aside>
+      <section class="active-task-panel">
+        ${taskPanel(projectId, activeTask)}
+      </section>
+      <aside class="reference-rail">
+        ${referenceRail(projectId, workflow)}
+      </aside>
     </div>
   `;
 }
 
-function taskCard(projectId, task) {
+function workflowGroups(workflow) {
+  return [
+    { title: '1. 产品角度参考图', tasks: [workflow.angleReference] },
+    { title: '2. 9 张电商图', tasks: workflow.ecommerceImages },
+    { title: '3. SKU 图', tasks: workflow.skuImages }
+  ];
+}
+
+function workflowStepGroup(group) {
+  return `<div class="workflow-step-group">
+    <h3>${escapeHtml(group.title)}</h3>
+    <div class="workflow-step-list">
+      ${group.tasks.map((task) => `
+        <button type="button" class="workflow-step ${taskKey(task) === activeTaskKey ? 'active' : ''}" data-task-key="${escapeHtml(taskKey(task))}">
+          <span>${escapeHtml(task.title)}</span>
+          <small>${escapeHtml(task.status)}</small>
+        </button>
+      `).join('')}
+    </div>
+  </div>`;
+}
+
+function taskPanel(projectId, task) {
   return `<article class="task-card" data-task-type="${escapeHtml(task.taskType)}" data-task-id="${escapeHtml(task.taskId)}">
-    <div class="task-card-head">
+    <div class="active-task-header">
       <div>
-        <strong>${escapeHtml(task.title)}</strong>
+        <p class="eyebrow">当前任务</p>
+        <h3>${escapeHtml(task.title)}</h3>
         <small>${escapeHtml(task.taskId)}</small>
       </div>
       <span class="pill">${escapeHtml(task.status)}</span>
     </div>
-    ${task.sku?.local_image_path ? `<img class="task-thumb" src="/projects-assets/${encodeURIComponent(projectId)}/${task.sku.local_image_path.split('/').map(encodeURIComponent).join('/')}" alt="" />` : ''}
-    <textarea class="task-prompt">${escapeHtml(task.prompt || '')}</textarea>
+    <div class="active-task-body">
+      <div class="task-source-preview">
+        ${task.sku?.local_image_path ? `<img src="/projects-assets/${encodeURIComponent(projectId)}/${task.sku.local_image_path.split('/').map(encodeURIComponent).join('/')}" alt="" />` : `<div class="source-placeholder">使用 main/detail 和生图素材</div>`}
+      </div>
+      <label class="task-prompt-wrap">
+        <span>提示词</span>
+        <textarea class="task-prompt">${escapeHtml(task.prompt || '')}</textarea>
+      </label>
+    </div>
     <div class="task-actions">
       <button type="button" data-action="save-prompt">保存提示词</button>
-      <button type="button" data-action="download-package">下载素材包</button>
+      <button type="button" data-action="download-package">下载 ChatGPT 素材包</button>
       <label class="upload-button">
-        上传结果
+        上传生成结果
         <input type="file" accept="image/*" data-action="upload-result" />
       </label>
     </div>
@@ -171,6 +206,13 @@ function taskCard(projectId, task) {
 }
 
 function bindWorkflowActions(projectId) {
+  for (const step of document.querySelectorAll('.workflow-step')) {
+    step.addEventListener('click', () => {
+      activeTaskKey = step.dataset.taskKey;
+      document.querySelector('#workflow-root').innerHTML = renderWorkflow(projectId, currentWorkflow);
+      bindWorkflowActions(projectId);
+    });
+  }
   for (const card of document.querySelectorAll('.task-card')) {
     card.querySelector('[data-action="save-prompt"]').addEventListener('click', () => savePrompt(projectId, card));
     card.querySelector('[data-action="download-package"]').addEventListener('click', () => downloadPackage(projectId, card));
@@ -221,4 +263,35 @@ function setTaskMessage(card, message, type) {
   const target = card.querySelector('.task-message');
   target.textContent = message || '';
   target.dataset.type = type || '';
+}
+
+function referenceRail(projectId, workflow) {
+  const sourceImages = (currentProject?.report?.download_results || [])
+    .filter((item) => item.status === 'success' && ['main', 'detail'].includes(item.type) && item.local_path)
+    .slice(0, 12);
+  const angleImages = workflow.angleReference.uploadedResults || [];
+  const styleImages = workflow.ecommerceImages.flatMap((task) => task.uploadedResults || []).slice(0, 12);
+  return `
+    <h3>参考素材</h3>
+    ${referenceGroup(projectId, '原图素材', sourceImages.map((item) => ({ name: item.type, path: item.local_path })))}
+    ${referenceGroup(projectId, '角度参考图', angleImages)}
+    ${referenceGroup(projectId, '风格参考图', styleImages)}
+  `;
+}
+
+function referenceGroup(projectId, title, files) {
+  return `<div class="reference-group">
+    <h4>${escapeHtml(title)}</h4>
+    <div class="reference-thumbs">
+      ${files.length ? files.map((file) => `<img src="/projects-assets/${encodeURIComponent(projectId)}/${file.path.split('/').map(encodeURIComponent).join('/')}" alt="${escapeHtml(file.name || '')}" />`).join('') : '<span class="muted">暂无</span>'}
+    </div>
+  </div>`;
+}
+
+function allWorkflowTasks(workflow) {
+  return [workflow.angleReference, ...workflow.ecommerceImages, ...workflow.skuImages];
+}
+
+function taskKey(task) {
+  return `${task.taskType}:${task.taskId}`;
 }

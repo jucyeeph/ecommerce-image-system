@@ -63,6 +63,21 @@ data/settings/
 
 这些都是运行时数据，不提交到 Git。
 
+## ChatGPT 素材包内容
+
+每个工作流任务下载的 `input_package.zip` 只包含给 ChatGPT 实际使用的资料：
+
+```text
+prompt.md
+product_brief.md
+source_images/
+generated_materials/
+style_reference/
+brand_assets/
+```
+
+`image_urls.json`、`product_info.json` 等系统追溯文件会继续保留在 `00_source/`，但不会默认放进 ChatGPT 素材包。
+
 ## 测试
 
 ```bash

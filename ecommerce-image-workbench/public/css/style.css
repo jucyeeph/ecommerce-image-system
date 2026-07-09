@@ -281,9 +281,7 @@ textarea {
   gap: 14px;
 }
 
-.asset-box,
-.workflow-column,
-.task-card {
+.asset-box {
   border: 1px solid #d8ddd0;
   border-radius: 6px;
   background: #ffffff;
@@ -315,59 +313,172 @@ textarea {
   font-size: 12px;
 }
 
-.workflow-board {
+.workflow-workspace {
   display: grid;
-  gap: 18px;
+  grid-template-columns: 280px minmax(420px, 1fr) 260px;
+  gap: 16px;
+  align-items: start;
 }
 
-.workflow-column {
-  display: grid;
-  gap: 12px;
-  padding: 14px;
+.workflow-steps,
+.active-task-panel,
+.reference-rail {
+  border: 1px solid #d8ddd0;
+  border-radius: 6px;
+  background: #ffffff;
+  min-width: 0;
 }
 
-.workflow-column h3 {
+.workflow-steps,
+.reference-rail {
+  max-height: calc(100vh - 150px);
+  overflow: auto;
+  padding: 12px;
+  position: sticky;
+  top: 12px;
+}
+
+.workflow-step-group {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.workflow-step-group h3,
+.reference-rail h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 15px;
+  letter-spacing: 0;
 }
 
-.task-grid {
+.workflow-step-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 6px;
+}
+
+.workflow-step {
+  width: 100%;
+  display: grid;
+  gap: 4px;
+  text-align: left;
+  border: 1px solid #dce3d5;
+  background: #fbfcf8;
+  color: #20241f;
+  padding: 9px 10px;
+}
+
+.workflow-step.active {
+  border-color: #20241f;
+  background: #e7efe1;
+}
+
+.workflow-step span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workflow-step small,
+.active-task-header small,
+.asset-box small {
+  display: block;
+  color: #687261;
+}
+
+.active-task-panel {
+  padding: 16px;
 }
 
 .task-card {
   display: grid;
-  gap: 10px;
-  padding: 12px;
+  gap: 14px;
   min-width: 0;
+  border: 0;
+  background: transparent;
 }
 
-.task-card-head {
+.active-task-header {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
   align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
 }
 
-.task-card-head small {
-  display: block;
-  margin-top: 4px;
+.active-task-header h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.active-task-body {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  gap: 14px;
+}
+
+.task-source-preview {
+  min-height: 220px;
+}
+
+.task-source-preview img,
+.source-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid #d8ddd0;
+  border-radius: 6px;
+}
+
+.task-source-preview img {
+  object-fit: cover;
+}
+
+.source-placeholder {
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: #f7f8f4;
   color: #687261;
+  text-align: center;
+  font-weight: 800;
 }
 
-.task-thumb {
+.task-prompt-wrap {
+  display: grid;
+  gap: 8px;
+  font-weight: 800;
+}
+
+.task-prompt {
+  min-height: 360px;
+}
+
+.reference-rail {
+  display: grid;
+  gap: 14px;
+}
+
+.reference-group {
+  display: grid;
+  gap: 8px;
+}
+
+.reference-group h4 {
+  margin: 0;
+  font-size: 13px;
+  color: #4f5a48;
+}
+
+.reference-thumbs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.reference-thumbs img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
   border: 1px solid #d8ddd0;
   border-radius: 6px;
-}
-
-.task-prompt {
-  min-height: 180px;
-  font-size: 13px;
 }
 
 .task-actions {
@@ -429,8 +540,15 @@ textarea {
   .upload-zone,
   .summary-grid,
   .asset-settings,
-  .task-grid {
+  .workflow-workspace,
+  .active-task-body {
     grid-template-columns: 1fr;
+  }
+
+  .workflow-steps,
+  .reference-rail {
+    max-height: none;
+    position: static;
   }
 
   .topbar {

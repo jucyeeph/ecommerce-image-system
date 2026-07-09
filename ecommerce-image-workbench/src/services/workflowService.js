@@ -81,10 +81,8 @@ export async function buildTaskPackage({ projectPath, dataDir = paths.dataDir, t
   });
   archive.pipe(output);
 
-  archive.file(path.join(projectPath, '00_source/product_info.json'), { name: 'product_info.json' });
-  archive.file(path.join(projectPath, '00_source/image_urls.json'), { name: 'image_urls.json' });
   archive.file(path.join(taskDir, 'prompt.md'), { name: 'prompt.md' });
-  archive.append(await buildInstructionText(task), { name: 'README_FOR_CHATGPT.md' });
+  archive.append(await buildProductBrief(projectPath), { name: 'product_brief.md' });
   await addExistingDir(archive, path.join(projectPath, '01_downloaded_images/main'), 'source_images/main');
   await addExistingDir(archive, path.join(projectPath, '01_downloaded_images/detail'), 'source_images/detail');
   await addExistingDir(archive, path.join(projectPath, '05_workflow/01_angle_reference/uploaded_results'), 'generated_materials/angle_reference');
@@ -181,10 +179,10 @@ async function addExistingDir(archive, absoluteDir, zipPrefix) {
 
 async function addSettingsAssets(archive, dataDir) {
   const settingsDir = getSettingsDir(dataDir);
-  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/logo'), 'generation_assets/logo');
-  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/brand_refs'), 'generation_assets/brand_refs');
-  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/background_refs'), 'generation_assets/background_refs');
-  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/style_refs'), 'generation_assets/style_refs');
+  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/logo'), 'brand_assets/logo');
+  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/brand_refs'), 'brand_assets/brand_refs');
+  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/background_refs'), 'brand_assets/background_refs');
+  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/style_refs'), 'brand_assets/style_refs');
 }
 
 async function addPreviousEcommerceResults(archive, projectPath, taskId) {
@@ -199,21 +197,21 @@ async function addPreviousEcommerceResults(archive, projectPath, taskId) {
   }
 }
 
-async function buildInstructionText(task) {
-  return `# ChatGPT 生图素材包
+async function buildProductBrief(projectPath) {
+  const product = await readJson(path.join(projectPath, '00_source/product_info.json'));
+  return `# Product Brief
 
-任务：${task.title}
-类型：${task.taskType}
+## Product
 
-使用方式：
-1. 把这个压缩包拖入 ChatGPT 聊天区。
-2. 复制 prompt.md 中的提示词，可按当前产品略微修改。
-3. 生成图片后，回到系统把结果上传到当前任务框。
+- Product name: ${product.product_name || ''}
+- Parent SKU: ${product.parent_sku || ''}
+- Brand: ${product.brand || ''}
+- Product type: ${product.product_type || ''}
+- Supplier URL: ${product.supplier_url || ''}
 
-注意：
-- 系统不调用 AI API。
-- 请保持产品外形、包装、标签、颜色和品牌素材准确。
-- 如果这是后续电商图，请参考 style_reference 中已有成品图延续风格。
+## Product Description
+
+${product.description || ''}
 `;
 }
 
