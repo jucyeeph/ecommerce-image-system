@@ -5,7 +5,7 @@ import { ensureDir, writeJson } from './fileWriter.js';
 import { safeFilename } from '../utils/safeFilename.js';
 
 const settingsFileName = 'default_prompts.json';
-export const assetCategories = ['logo', 'brand_refs', 'background_refs', 'style_refs'];
+export const assetCategories = ['logo', 'brand_refs', 'background_refs', 'angle_refs', 'style_refs'];
 
 export const defaultPrompts = {
   angle_reference: `# 产品角度参考图

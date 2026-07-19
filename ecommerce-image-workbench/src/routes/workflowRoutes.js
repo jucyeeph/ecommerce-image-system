@@ -5,6 +5,7 @@ import { paths } from '../config/paths.js';
 import {
   buildTaskPackage,
   ensureProjectWorkflow,
+  saveReferenceUpload,
   saveTaskPrompt,
   saveTaskUpload
 } from '../services/workflowService.js';
@@ -64,6 +65,22 @@ workflowRoutes.post('/api/projects/:projectId/workflow/tasks/:taskType/:taskId/u
       file: req.file
     });
     res.json({ task });
+  } catch (error) {
+    next(error);
+  }
+});
+
+workflowRoutes.post('/api/projects/:projectId/workflow/references/:referenceType/upload', upload.single('file'), async (req, res, next) => {
+  try {
+    if (!req.file) {
+      throw Object.assign(new Error('请上传参考图片'), { statusCode: 400 });
+    }
+    const workflow = await saveReferenceUpload({
+      projectPath: getProjectPath(req.params.projectId),
+      referenceType: req.params.referenceType,
+      file: req.file
+    });
+    res.json({ workflow });
   } catch (error) {
     next(error);
   }

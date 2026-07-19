@@ -8,6 +8,10 @@ import { ensureDir, writeJson, writeText } from './fileWriter.js';
 import { getSettings, getSettingsDir } from './settingsService.js';
 
 const ecommerceTaskIds = Array.from({ length: 9 }, (_, index) => `image_${String(index + 1).padStart(2, '0')}`);
+const projectReferenceDirs = {
+  angle: '05_workflow/01_angle_reference/uploaded_results',
+  style: '05_workflow/00_reference_assets/style_reference'
+};
 
 export async function ensureProjectWorkflow({ projectPath, dataDir = paths.dataDir }) {
   const settings = await getSettings({ dataDir });
@@ -50,7 +54,8 @@ export async function ensureProjectWorkflow({ projectPath, dataDir = paths.dataD
     product,
     angleReference,
     ecommerceImages,
-    skuImages
+    skuImages,
+    projectReferences: await listProjectReferences(projectPath)
   };
   await writeJson(path.join(projectPath, '05_workflow/workflow_index.json'), workflow);
   return workflow;
@@ -86,6 +91,7 @@ export async function buildTaskPackage({ projectPath, dataDir = paths.dataDir, t
   await addExistingDir(archive, path.join(projectPath, '01_downloaded_images/main'), 'source_images/main');
   await addExistingDir(archive, path.join(projectPath, '01_downloaded_images/detail'), 'source_images/detail');
   await addExistingDir(archive, path.join(projectPath, '05_workflow/01_angle_reference/uploaded_results'), 'generated_materials/angle_reference');
+  await addExistingDir(archive, path.join(projectPath, projectReferenceDirs.style), 'style_reference/project');
   await addSettingsAssets(archive, dataDir);
 
   if (taskType === 'ecommerce') {
@@ -121,11 +127,30 @@ export async function saveTaskUpload({ projectPath, taskType, taskId, file }) {
   return task;
 }
 
+export async function saveReferenceUpload({ projectPath, dataDir = paths.dataDir, referenceType, file }) {
+  const relativeDir = projectReferenceDir(referenceType);
+  const uploadDir = path.join(projectPath, relativeDir);
+  await ensureDir(uploadDir);
+  const fileName = `${Date.now()}_${safeFilename(file.originalname || `${referenceType}-reference`)}`;
+  const target = path.join(uploadDir, fileName);
+  await fsp.copyFile(file.path, target);
+  await fsp.unlink(file.path).catch(() => {});
+  return ensureProjectWorkflow({ projectPath, dataDir });
+}
+
 export function taskPath(taskType, taskId) {
   if (taskType === 'angle') return '05_workflow/01_angle_reference';
   if (taskType === 'ecommerce') return `05_workflow/02_ecommerce_images/${taskId}`;
   if (taskType === 'sku') return `05_workflow/03_sku_images/${taskId}`;
   throw Object.assign(new Error('Unsupported workflow task type'), { statusCode: 400 });
+}
+
+function projectReferenceDir(referenceType) {
+  const relativeDir = projectReferenceDirs[referenceType];
+  if (!relativeDir) {
+    throw Object.assign(new Error('Unsupported reference type'), { statusCode: 400 });
+  }
+  return relativeDir;
 }
 
 async function ensureTask({ projectPath, taskType, taskId, title, prompt, sku }) {
@@ -162,6 +187,14 @@ async function ensureTask({ projectPath, taskType, taskId, title, prompt, sku })
   return task;
 }
 
+async function listProjectReferences(projectPath) {
+  await ensureDir(path.join(projectPath, projectReferenceDirs.style));
+  return {
+    angle: await listFiles(path.join(projectPath, projectReferenceDirs.angle), projectReferenceDirs.angle),
+    style: await listFiles(path.join(projectPath, projectReferenceDirs.style), projectReferenceDirs.style)
+  };
+}
+
 async function readTask(projectPath, taskType, taskId) {
   const relativePath = taskPath(taskType, taskId);
   return readJson(path.join(projectPath, relativePath, 'metadata.json'));
@@ -182,7 +215,8 @@ async function addSettingsAssets(archive, dataDir) {
   await addExistingDir(archive, path.join(settingsDir, 'generation_assets/logo'), 'brand_assets/logo');
   await addExistingDir(archive, path.join(settingsDir, 'generation_assets/brand_refs'), 'brand_assets/brand_refs');
   await addExistingDir(archive, path.join(settingsDir, 'generation_assets/background_refs'), 'brand_assets/background_refs');
-  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/style_refs'), 'brand_assets/style_refs');
+  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/angle_refs'), 'generated_materials/global_angle_refs');
+  await addExistingDir(archive, path.join(settingsDir, 'generation_assets/style_refs'), 'style_reference/settings');
 }
 
 async function addPreviousEcommerceResults(archive, projectPath, taskId) {

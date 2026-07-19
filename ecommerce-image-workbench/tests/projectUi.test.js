@@ -14,6 +14,8 @@ test('phase 2 project UI uses a focused workflow workspace layout', async () => 
   assert.match(projectJs, /workflow-steps/);
   assert.match(projectJs, /active-task-panel/);
   assert.match(projectJs, /reference-rail/);
+  assert.match(projectJs, /data-reference-upload="angle"/);
+  assert.match(projectJs, /data-reference-upload="style"/);
   assert.match(projectJs, /素材包/);
   assert.doesNotMatch(projectJs, /task-grid/);
 

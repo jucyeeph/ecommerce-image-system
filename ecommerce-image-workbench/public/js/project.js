@@ -218,6 +218,9 @@ function bindWorkflowActions(projectId) {
     card.querySelector('[data-action="download-package"]').addEventListener('click', () => downloadPackage(projectId, card));
     card.querySelector('[data-action="upload-result"]').addEventListener('change', (event) => uploadResult(projectId, card, event));
   }
+  for (const input of document.querySelectorAll('[data-reference-upload]')) {
+    input.addEventListener('change', (event) => uploadReference(projectId, event));
+  }
 }
 
 async function savePrompt(projectId, card) {
@@ -253,6 +256,26 @@ async function uploadResult(projectId, card, event) {
   await loadWorkflow(projectId);
 }
 
+async function uploadReference(projectId, event) {
+  const input = event.target;
+  const file = input.files[0];
+  if (!file) return;
+  const body = new FormData();
+  body.append('file', file);
+  const response = await fetch(`/api/projects/${encodeURIComponent(projectId)}/workflow/references/${encodeURIComponent(input.dataset.referenceUpload)}/upload`, {
+    method: 'POST',
+    body
+  });
+  const result = await response.json();
+  if (!response.ok) {
+    input.closest('.reference-group')?.querySelector('.reference-message')?.replaceChildren(document.createTextNode(result.error || '上传失败'));
+    return;
+  }
+  currentWorkflow = result.workflow;
+  document.querySelector('#workflow-root').innerHTML = renderWorkflow(projectId, currentWorkflow);
+  bindWorkflowActions(projectId);
+}
+
 function taskUrl(projectId, card, action) {
   const taskType = card.dataset.taskType;
   const taskId = card.dataset.taskId;
@@ -269,22 +292,39 @@ function referenceRail(projectId, workflow) {
   const sourceImages = (currentProject?.report?.download_results || [])
     .filter((item) => item.status === 'success' && ['main', 'detail'].includes(item.type) && item.local_path)
     .slice(0, 12);
-  const angleImages = workflow.angleReference.uploadedResults || [];
-  const styleImages = workflow.ecommerceImages.flatMap((task) => task.uploadedResults || []).slice(0, 12);
+  const angleImages = workflow.projectReferences?.angle || workflow.angleReference.uploadedResults || [];
+  const projectStyleImages = workflow.projectReferences?.style || [];
+  const generatedStyleImages = workflow.ecommerceImages.flatMap((task) => task.uploadedResults || []);
+  const styleImages = [...projectStyleImages, ...generatedStyleImages].slice(0, 12);
   return `
     <h3>参考素材</h3>
     ${referenceGroup(projectId, '原图素材', sourceImages.map((item) => ({ name: item.type, path: item.local_path })))}
-    ${referenceGroup(projectId, '角度参考图', angleImages)}
-    ${referenceGroup(projectId, '风格参考图', styleImages)}
+    ${referenceGroup(projectId, '角度参考图', angleImages, 'angle')}
+    ${referenceGroup(projectId, '风格参考图', styleImages, 'style')}
   `;
 }
 
-function referenceGroup(projectId, title, files) {
+function referenceGroup(projectId, title, files, uploadType = '') {
+  const uploadControl = uploadType === 'angle'
+    ? `<label class="reference-upload">
+        上传
+        <input type="file" accept="image/*" data-reference-upload="angle" />
+      </label>`
+    : uploadType === 'style'
+      ? `<label class="reference-upload">
+        上传
+        <input type="file" accept="image/*" data-reference-upload="style" />
+      </label>`
+      : '';
   return `<div class="reference-group">
-    <h4>${escapeHtml(title)}</h4>
+    <div class="reference-group-head">
+      <h4>${escapeHtml(title)}</h4>
+      ${uploadControl}
+    </div>
     <div class="reference-thumbs">
       ${files.length ? files.map((file) => `<img src="/projects-assets/${encodeURIComponent(projectId)}/${file.path.split('/').map(encodeURIComponent).join('/')}" alt="${escapeHtml(file.name || '')}" />`).join('') : '<span class="muted">暂无</span>'}
     </div>
+    <small class="reference-message"></small>
   </div>`;
 }
 

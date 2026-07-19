@@ -18,6 +18,7 @@ const assetLabels = {
   logo: 'Logo',
   brand_refs: '品牌参考',
   background_refs: '背景参考',
+  angle_refs: '角度参考',
   style_refs: '风格参考'
 };
 

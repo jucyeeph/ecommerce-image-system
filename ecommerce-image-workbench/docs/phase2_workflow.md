@@ -27,10 +27,12 @@ data/settings/default_prompts.json
 data/settings/generation_assets/logo/
 data/settings/generation_assets/brand_refs/
 data/settings/generation_assets/background_refs/
+data/settings/generation_assets/angle_refs/
 data/settings/generation_assets/style_refs/
 ```
 
 Settings are intentionally outside Git so the test NAS can keep its own prompt and brand asset library.
+The workflow page also supports project-level uploads for angle references and style references. Project angle references are stored with the angle task results, and project style references are stored under `05_workflow/00_reference_assets/style_reference/`.
 
 ## Package Contents
 
@@ -40,7 +42,9 @@ Each `input_package.zip` contains:
 - `product_brief.md`
 - source main/detail images when available
 - angle reference results when available
+- project-level style references when available
 - prior ecommerce image results for style continuity when applicable
 - global brand assets from settings
+- global angle/style references from settings
 
 System files such as `image_urls.json` and `product_info.json` remain in `00_source/` for traceability, but they are not included in ChatGPT packages by default.

@@ -11,6 +11,8 @@ test('settings service creates and updates default workflow prompts', async () =
 
   assert.match(settings.defaultPrompts.angle_reference, /产品角度参考图/);
   assert.equal(settings.generationAssets.logo.length, 0);
+  assert.equal(settings.generationAssets.angle_refs.length, 0);
+  assert.equal(settings.generationAssets.style_refs.length, 0);
 
   const updated = await saveDefaultPrompts({
     dataDir,
