@@ -71,7 +71,17 @@ mkdir -p app
 tar -xzf deploy/app.tar.gz -C app
 
 cd app
-"$DOCKER_BIN" build -t "$IMAGE_NAME" .
+BUILT_IMAGE=0
+if "$DOCKER_BIN" build -t "$IMAGE_NAME" .; then
+  BUILT_IMAGE=1
+else
+  echo "docker_build_failed"
+  if ! "$DOCKER_BIN" image inspect "$IMAGE_NAME" >/dev/null 2>&1; then
+    echo "No existing image is available for fallback deployment: $IMAGE_NAME" >&2
+    exit 1
+  fi
+  echo "using_existing_image_fallback"
+fi
 
 cd "$REMOTE_ROOT"
 cat > docker-compose.yml <<COMPOSE
@@ -96,6 +106,18 @@ services:
 COMPOSE
 
 "$DOCKER_BIN" compose -f docker-compose.yml up -d --remove-orphans
+
+if [ "$BUILT_IMAGE" -eq 0 ]; then
+  echo "copying_app_into_existing_container"
+  "$DOCKER_BIN" cp app/src ecommerce-image-workbench-test:/app/
+  "$DOCKER_BIN" cp app/public ecommerce-image-workbench-test:/app/
+  "$DOCKER_BIN" cp app/docs ecommerce-image-workbench-test:/app/
+  "$DOCKER_BIN" cp app/package.json ecommerce-image-workbench-test:/app/package.json
+  if [ -f app/package-lock.json ]; then
+    "$DOCKER_BIN" cp app/package-lock.json ecommerce-image-workbench-test:/app/package-lock.json
+  fi
+  "$DOCKER_BIN" restart ecommerce-image-workbench-test >/dev/null
+fi
 
 for i in $(seq 1 30); do
   if "$DOCKER_BIN" exec ecommerce-image-workbench-test node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))" >/dev/null 2>&1; then
