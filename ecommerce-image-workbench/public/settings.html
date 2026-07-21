@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - Ecommerce Image Workbench</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Settings</p>
+        <h1>默认提示词与生图素材</h1>
+      </div>
+      <nav class="nav-actions">
+        <a class="nav-link" href="/">Import</a>
+      </nav>
+    </header>
+
+    <main class="layout">
+      <section>
+        <div class="section-head">
+          <h2>默认提示词</h2>
+          <button id="save-prompts" type="button">保存</button>
+        </div>
+        <div id="prompt-settings" class="prompt-settings"></div>
+        <div id="settings-status" class="status-line"></div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>默认生图素材</h2>
+        </div>
+        <div id="asset-settings" class="asset-settings"></div>
+      </section>
+    </main>
+
+    <script src="/js/settings.js" type="module"></script>
+  </body>
+</html>

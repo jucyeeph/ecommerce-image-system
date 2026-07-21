@@ -1,0 +1,4 @@
+interface:
+  display_name: "1688 一键上架"
+  short_description: "从1688链接生成经审核的BigSeller上架文件"
+  default_prompt: "使用 $1688-to-bigseller-listing 处理这个1688链接，并在关键审核节点暂停。"

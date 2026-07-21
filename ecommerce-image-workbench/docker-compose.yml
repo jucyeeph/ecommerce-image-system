@@ -1,0 +1,18 @@
+services:
+  ecommerce-image-workbench:
+    build: .
+    container_name: ecommerce-image-workbench
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+      - ./projects:/app/projects
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - PROJECT_TIME_ZONE=Asia/Shanghai
+      - DATA_DIR=/app/data
+      - UPLOADS_DIR=/app/data/uploads
+      - PROJECTS_DIR=/app/projects
+      - DATABASE_PATH=/app/data/app.db
+    restart: unless-stopped
